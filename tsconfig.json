@@ -7,7 +7,6 @@
       "outDir": "dist",
       "strict": true,
       "skipLibCheck": true,
-      "types": ["node"],
       "esModuleInterop": true,
       "allowSyntheticDefaultImports": true,
       "isolatedModules": true,
