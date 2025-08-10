@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "build": "npm i && tsc",
+    "tsc": "tsc -w",
     "dev": "tsc-watch --onSuccess \"nodemon dist/index.js\""
   },
   "keywords": [],
