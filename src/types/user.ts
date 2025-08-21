@@ -1,6 +1,5 @@
 import { JwtPayload } from "jsonwebtoken";
 
-
 export interface IUser {
   avatar: {
     url?: string | null;
@@ -11,14 +10,15 @@ export interface IUser {
   fullName?: string;
   password: string;
   isEmailVerified: boolean;
+  isSpotifyConnected: boolean;
   refreshToken?: string;
-  spotifyAccessToken?:string;
+  spotifyAccessToken?: string;
   spotifyRefreshToken?: string;
   forgotPasswordToken?: string;
   forgotPasswordExpiry?: Date | number;
   emailVerificationToken?: string;
   emailVerificationExpiry?: Date | number;
-  loginType:String,
+  loginType: String;
   role: string;
   createdAt?: Date;
   updatedAt?: Date;
@@ -34,7 +34,6 @@ export interface IUserMethods {
     tokenExpiry: number;
   };
 }
-
 
 export interface MyJwtPayload extends JwtPayload {
   _id: string;

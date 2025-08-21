@@ -184,7 +184,6 @@ try {
       }
     )
   );
-
 } catch (error) {
   console.error("PASSPORT ERROR: ", error);
 }
