@@ -150,71 +150,40 @@ try {
     )
   );
 
-passport.use(
-  new SpotifyStrategy(
-    {
-      clientID: process.env.SPOTIFY_CLIENT_ID!,
-      clientSecret: process.env.SPOTIFY_CLIENT_SECRET!,
-      callbackURL: process.env.SPOTIFY_CALLBACK_URL!,
-    },
-    async (accessToken, refreshToken, expires_in, profile, next) => {
-      try {
-        // Find user by Spotify email
-        let user = await User.findOne({ email: profile._json.email });
+  passport.use(
+    new SpotifyStrategy(
+      {
+        clientID: process.env.SPOTIFY_CLIENT_ID!,
+        clientSecret: process.env.SPOTIFY_CLIENT_SECRET!,
+        callbackURL: process.env.SPOTIFY_CALLBACK_URL!,
+      },
+      async (accessToken, refreshToken, expires_in, profile, next) => {
+        try {
+          // Find user by Spotify email
+          let user = await User.findOne({ email: profile._json.email });
 
-        if (user) {
-          if (user.loginType !== UserLoginType.SPOTIFY) {
-            return next(
-              new ApiError(
-                400,
-                `You have previously registered using ${user.loginType
-                  ?.toLowerCase()
-                  .split("_")
-                  .join(" ")}. Please use the ${user.loginType
-                  ?.toLowerCase()
-                  .split("_")
-                  .join(" ")} login option to access your account.`
-              )
-            );
-          }
+          if (user) {
+            // Update Spotify tokens on existing user
+            user.isSpotifyConnected= true;
+            user.spotifyAccessToken = accessToken;
+            user.spotifyRefreshToken = refreshToken;
+            await user.save();
 
-          // Update Spotify tokens on existing user
-          user.spotifyAccessToken = accessToken;
-          user.spotifyRefreshToken = refreshToken;
-          await user.save();
-
-          return next(null, user);
-        } else {
-          // Create new user and save Spotify tokens
-          const createdUser = await User.create({
-            email: profile._json.email,
-            password: profile.id, // still set some password if required
-            username: profile._json.email?.split("@")[0],
-            isEmailVerified: true,
-            role: UserRolesEnum.USER,
-            avatar: {
-              url: profile._json.images?.[0]?.url || "",
-              localPath: "",
-            },
-            loginType: UserLoginType.SPOTIFY,
-            spotifyAccessToken: accessToken,
-            spotifyRefreshToken: refreshToken,
-          });
-
-          if (createdUser) {
-            return next(null, createdUser);
+            return next(null, user);
           } else {
-            return next(new ApiError(500, "Error while registering the user"));
+            return next(new ApiError(404, "User not found"));
           }
+        } catch (error) {
+          return next(
+            new ApiError(
+              500,
+              "Something went wrong in Spotify strategy: " + error
+            )
+          );
         }
-      } catch (error) {
-        return next(
-          new ApiError(500, "Something went wrong in Spotify strategy: " + error)
-        );
       }
-    }
-  )
-);
+    )
+  );
 
 } catch (error) {
   console.error("PASSPORT ERROR: ", error);
